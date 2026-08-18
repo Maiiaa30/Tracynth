@@ -42,7 +42,7 @@ cp .env.example .env
 python -m pip install -e "./backend[dev]"
 cd frontend && npm ci && cd ..
 python backend/manage.py migrate
-python backend/manage.py create_initial_user
+python backend/manage.py create_initial_user --username admin
 ```
 
 Run the backend and frontend development servers using the commands documented

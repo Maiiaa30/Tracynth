@@ -40,7 +40,7 @@ docker compose config --quiet
 docker compose build
 docker compose up -d postgres redis
 docker compose run --rm backend python manage.py migrate
-docker compose run --rm backend python manage.py create_initial_user
+docker compose run --rm backend python manage.py create_initial_user --username admin
 docker compose up -d
 docker compose ps
 sudo tailscale serve --bg https / http://127.0.0.1:8080
