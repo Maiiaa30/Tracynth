@@ -1,0 +1,47 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.venv/
+*.egg-info/
+
+# Django and runtime data
+*.sqlite3
+/media/
+/uploads/
+/evidence/
+/reports/
+/backups/
+backend/staticfiles/*
+!backend/staticfiles/.gitkeep
+
+# Node
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local tooling
+*.log
+.tmp/
+tmp/

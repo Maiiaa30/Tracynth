@@ -1,0 +1,209 @@
+name: tracynth
+
+x-backend: &backend
+  build:
+    context: .
+    dockerfile: infrastructure/docker/backend.Dockerfile
+  env_file:
+    - .env
+  environment:
+    TRACYNTH_ENV: production
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY}
+    DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?set DJANGO_ALLOWED_HOSTS}
+    DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:?set DJANGO_CSRF_TRUSTED_ORIGINS}
+    DJANGO_SECURE_COOKIES: "true"
+    DJANGO_SECURE_SSL_REDIRECT: "false"
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: "5432"
+    REDIS_HOST: redis
+    REDIS_PORT: "6379"
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+    networks:
+      - internal
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=$$REDIS_PASSWORD redis-cli ping | grep -qx PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    <<: *backend
+    command: ["sh", "/app/backend/entrypoint.sh"]
+    volumes:
+      - evidence_data:/var/lib/tracynth/evidence
+    networks:
+      - internal
+      - proxy
+    mem_limit: 1g
+    pids_limit: 256
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "/usr/local/bin/tracynth-healthcheck", "url", "http://localhost:8000/health/"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  worker:
+    <<: *backend
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=general", "--concurrency=${TRACYNTH_GENERAL_CONCURRENCY:-2}"]
+    stop_grace_period: 30s
+    volumes:
+      - evidence_data:/var/lib/tracynth/evidence
+    networks:
+      - internal
+      - egress
+    mem_limit: 1g
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "python", "/usr/local/bin/tracynth-celery-healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  crawler-worker:
+    <<: *backend
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=crawler", "--concurrency=${TRACYNTH_CRAWLER_CONCURRENCY:-1}", "--max-tasks-per-child=25"]
+    stop_grace_period: 45s
+    networks:
+      - internal
+      - egress
+    mem_limit: 1g
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "python", "/usr/local/bin/tracynth-celery-healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  browser-worker:
+    <<: *backend
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=browser", "--concurrency=${TRACYNTH_BROWSER_CONCURRENCY:-1}", "--max-tasks-per-child=10"]
+    stop_grace_period: 45s
+    volumes:
+      - evidence_data:/var/lib/tracynth/evidence
+    networks:
+      - internal
+      - egress
+    mem_limit: 2g
+    pids_limit: 512
+    healthcheck:
+      test: ["CMD", "python", "/usr/local/bin/tracynth-celery-healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  file-worker:
+    <<: *backend
+    command: ["celery", "-A", "config", "worker", "--loglevel=INFO", "--queues=file", "--concurrency=${TRACYNTH_FILE_CONCURRENCY:-1}", "--max-tasks-per-child=25"]
+    stop_grace_period: 45s
+    volumes:
+      - evidence_data:/var/lib/tracynth/evidence
+    networks:
+      - internal
+    mem_limit: 2g
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "python", "/usr/local/bin/tracynth-celery-healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  scheduler:
+    <<: *backend
+    command: ["celery", "-A", "config", "beat", "--loglevel=INFO", "--schedule=/tmp/celerybeat-schedule"]
+    networks:
+      - internal
+    mem_limit: 512m
+    pids_limit: 128
+    healthcheck:
+      disable: true
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/frontend.Dockerfile
+    expose:
+      - "8080"
+    networks:
+      - proxy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  caddy:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/caddy.Dockerfile
+    ports:
+      - "${TRACYNTH_BIND_ADDRESS:-127.0.0.1}:${TRACYNTH_PORT:-8080}:8080"
+    networks:
+      - proxy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
+networks:
+  internal:
+    internal: true
+  proxy: {}
+  egress:
+
+volumes:
+  postgres_data:
+  evidence_data:

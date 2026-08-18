@@ -1,0 +1,14 @@
+# Reproducible runtime set for Python 3.12/3.13. Regenerate deliberately after
+# reviewing upstream release notes and security advisories.
+Django==5.2.7
+djangorestframework==3.16.1
+celery[redis]==5.5.3
+dj-database-url==2.3.0
+psycopg[binary]==3.2.10
+argon2-cffi==25.1.0
+gunicorn==23.0.0; platform_system != "Windows"
+cryptography==45.0.6
+dnspython==2.7.0
+httpcore==1.0.9
+httpx==0.28.1
+whitenoise==6.12.0
