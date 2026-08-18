@@ -43,7 +43,7 @@ docker compose run --rm backend python manage.py migrate
 docker compose run --rm backend python manage.py create_initial_user --username admin
 docker compose up -d
 docker compose ps
-sudo tailscale serve --bg https / http://127.0.0.1:8080
+tailscale serve --bg http://127.0.0.1:8080
 tailscale serve status
 ```
 
