@@ -1,19 +1,26 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { Icon, type IconName } from '../components/Icon';
 
-const navigation = [
-  { to: '/', label: 'Overview', glyph: '⌁', end: true },
-  { to: '/scans/new', label: 'New domain scan', glyph: '+' },
-  { to: '/identities', label: 'Identity cases', glyph: '◎' },
-  { to: '/files', label: 'File lab', glyph: '◇' },
-  { to: '/graph', label: 'Exposure graph', glyph: '⌘' },
-  { to: '/evidence', label: 'Evidence', glyph: '◫' },
-  { to: '/incidents', label: 'Incidents', glyph: '!' },
-  { to: '/monitoring', label: 'Monitoring', glyph: '↻' },
-  { to: '/alerts', label: 'Alerts', glyph: '△' },
-  { to: '/reports', label: 'Reports', glyph: '▤' },
-  { to: '/settings', label: 'Settings', glyph: '⚙' },
+const navigation: Array<{
+  to: string;
+  label: string;
+  icon: IconName;
+  end?: boolean;
+  preview?: boolean;
+}> = [
+  { to: '/', label: 'Overview', icon: 'dashboard', end: true },
+  { to: '/scans/new', label: 'New domain scan', icon: 'scan' },
+  { to: '/identities', label: 'Identity cases', icon: 'identity', preview: true },
+  { to: '/files', label: 'File lab', icon: 'file' },
+  { to: '/graph', label: 'Exposure graph', icon: 'graph' },
+  { to: '/evidence', label: 'Evidence', icon: 'evidence' },
+  { to: '/incidents', label: 'Incidents', icon: 'incident' },
+  { to: '/monitoring', label: 'Monitoring', icon: 'monitoring' },
+  { to: '/alerts', label: 'Alerts', icon: 'alert', preview: true },
+  { to: '/reports', label: 'Reports', icon: 'report', preview: true },
+  { to: '/settings', label: 'Settings', icon: 'settings' },
 ];
 
 export function AppShell() {
@@ -38,12 +45,12 @@ export function AppShell() {
         Skip to main content
       </a>
       <header className="mobile-header">
-        <a href="/" className="wordmark" aria-label="Tracynth home">
+        <NavLink to="/" className="wordmark" aria-label="Tracynth home">
           <span className="brand-mark" aria-hidden="true">
             T
           </span>
           Tracynth
-        </a>
+        </NavLink>
         <button
           className="menu-button"
           type="button"
@@ -51,9 +58,18 @@ export function AppShell() {
           aria-controls="primary-navigation"
           onClick={() => setMenuOpen((open) => !open)}
         >
-          Menu
+          <Icon name={menuOpen ? 'close' : 'menu'} size={17} />
+          <span>{menuOpen ? 'Close' : 'Menu'}</span>
         </button>
       </header>
+      {menuOpen ? (
+        <button
+          className="sidebar-scrim"
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setMenuOpen(false)}
+        />
+      ) : null}
       <aside className={`sidebar ${menuOpen ? 'sidebar--open' : ''}`}>
         <NavLink to="/" className="wordmark" aria-label="Tracynth overview">
           <span className="brand-mark" aria-hidden="true">
@@ -63,18 +79,32 @@ export function AppShell() {
         </NavLink>
         <p className="workspace-label">Private workspace</p>
         <nav id="primary-navigation" aria-label="Primary navigation">
-          {navigation.map(({ to, label, glyph, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              onClick={() => setMenuOpen(false)}
-              className={({ isActive }) => (isActive ? 'nav-link nav-link--active' : 'nav-link')}
-            >
-              <span aria-hidden="true">{glyph}</span>
-              {label}
-            </NavLink>
-          ))}
+          {navigation.map(({ to, label, icon, end, preview }) => {
+            const content = (
+              <>
+                <span className="nav-link__icon">
+                  <Icon name={icon} size={17} />
+                </span>
+                <span className="nav-link__label">{label}</span>
+                {preview ? <span className="nav-link__badge">Soon</span> : null}
+              </>
+            );
+            return preview ? (
+              <span className="nav-link nav-link--disabled" aria-disabled="true" key={to}>
+                {content}
+              </span>
+            ) : (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) => (isActive ? 'nav-link nav-link--active' : 'nav-link')}
+              >
+                {content}
+              </NavLink>
+            );
+          })}
         </nav>
         <div className="account-block">
           <div className="avatar" aria-hidden="true">
@@ -84,8 +114,15 @@ export function AppShell() {
             <strong>{user?.username}</strong>
             <span>Operator</span>
           </div>
-          <button type="button" onClick={() => void handleSignOut()} disabled={signingOut}>
-            {signingOut ? '…' : 'Sign out'}
+          <button
+            className="account-signout"
+            type="button"
+            onClick={() => void handleSignOut()}
+            disabled={signingOut}
+            aria-label="Sign out"
+            title="Sign out"
+          >
+            {signingOut ? <span>…</span> : <Icon name="logout" size={16} />}
           </button>
         </div>
       </aside>

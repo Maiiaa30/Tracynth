@@ -43,22 +43,27 @@ export function SettingsPage() {
         title="Session security"
         description="Account lifecycle actions require explicit server support."
       >
-        <button
-          className="button button--secondary"
-          type="button"
-          disabled={signOutAll.isPending}
-          onClick={() => signOutAll.mutate()}
-        >
-          {signOutAll.isPending ? 'Signing out…' : 'Sign out all sessions'}
-        </button>
-        <p className="field-help">
-          This invalidates every active operator session, including this one.
-        </p>
-        {signOutAll.error ? (
-          <p className="form-error" role="alert">
-            {displayError(signOutAll.error)}
-          </p>
-        ) : null}
+        <div className="panel__body session-actions">
+          <div>
+            <strong>Invalidate active sessions</strong>
+            <p className="field-help">
+              This signs out every active operator session, including this one.
+            </p>
+          </div>
+          <button
+            className="button button--secondary"
+            type="button"
+            disabled={signOutAll.isPending}
+            onClick={() => signOutAll.mutate()}
+          >
+            {signOutAll.isPending ? 'Signing out…' : 'Sign out all sessions'}
+          </button>
+          {signOutAll.error ? (
+            <p className="form-error session-actions__error" role="alert">
+              {displayError(signOutAll.error)}
+            </p>
+          ) : null}
+        </div>
       </Section>
     </>
   );

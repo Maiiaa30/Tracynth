@@ -60,9 +60,9 @@ export function ExposureGraphPage() {
         {
           selector: 'node',
           style: {
-            'background-color': '#4bd3a7',
+            'background-color': '#796bea',
             label: 'data(label)',
-            color: '#dceae6',
+            color: '#e8eaf6',
             'font-size': 10,
             'text-valign': 'bottom',
             'text-margin-y': 8,
@@ -74,8 +74,8 @@ export function ExposureGraphPage() {
           selector: 'edge',
           style: {
             width: 1,
-            'line-color': '#49625c',
-            'target-arrow-color': '#49625c',
+            'line-color': '#454c70',
+            'target-arrow-color': '#454c70',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
           },
@@ -83,9 +83,9 @@ export function ExposureGraphPage() {
         {
           selector: ':selected',
           style: {
-            'background-color': '#f3bc64',
-            'line-color': '#f3bc64',
-            'target-arrow-color': '#f3bc64',
+            'background-color': '#58b4ff',
+            'line-color': '#58b4ff',
+            'target-arrow-color': '#58b4ff',
           },
         },
       ],

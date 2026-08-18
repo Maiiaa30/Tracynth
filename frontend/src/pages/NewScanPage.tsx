@@ -9,7 +9,6 @@ const moduleOptions = [
   { value: 'dns', label: 'DNS records', detail: 'Resolve and normalize public DNS data.' },
   { value: 'tls', label: 'TLS certificates', detail: 'Inspect public certificate metadata.' },
   { value: 'web', label: 'Web surface', detail: 'Collect bounded HTTP metadata.' },
-  { value: 'archives', label: 'Public archives', detail: 'Check passive historical sources.' },
 ];
 
 export function NewScanPage() {

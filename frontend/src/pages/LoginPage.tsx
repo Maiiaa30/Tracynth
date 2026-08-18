@@ -50,6 +50,12 @@ export function LoginPage() {
         </p>
       </section>
       <section className="login-card" aria-labelledby="login-title">
+        <div className="login-card__brand wordmark">
+          <span className="brand-mark" aria-hidden="true">
+            T
+          </span>
+          Tracynth
+        </div>
         <div>
           <p className="eyebrow">Operator access</p>
           <h2 id="login-title">Sign in</h2>

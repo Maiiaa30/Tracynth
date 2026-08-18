@@ -28,7 +28,10 @@ export function ResourcePage(props: ResourcePageProps) {
   return (
     <>
       <PageHeader title={props.title} description={props.description} />
-      <Section title={props.title} description="Records are loaded directly from the Tracynth API.">
+      <Section
+        title={`${props.title} records`}
+        description="Records are loaded directly from the Tracynth API."
+      >
         <ResourceTable
           page={query.data}
           columns={columns}

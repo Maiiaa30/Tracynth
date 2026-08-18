@@ -7,7 +7,7 @@ import { dateTime, text } from '../lib/format';
 const metrics = [
   { path: '/scans/?page_size=1', label: 'Scans' },
   { path: '/findings/?page_size=1', label: 'Findings' },
-  { path: '/alerts/?page_size=1&acknowledged=false', label: 'Open alerts' },
+  { path: '/entities/?page_size=1', label: 'Entities' },
   { path: '/evidence/?page_size=1', label: 'Evidence records' },
 ];
 
