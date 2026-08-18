@@ -1,4 +1,4 @@
-FROM caddy:2.10-alpine
+FROM caddy:2.11-alpine
 
 RUN addgroup -S -g 10001 tracynth \
     && adduser -S -D -H -u 10001 -G tracynth tracynth \
