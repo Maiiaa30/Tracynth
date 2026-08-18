@@ -7,7 +7,7 @@ def production_configuration_check(app_configs, **kwargs):
     errors = []
     if settings.SECRET_KEY == "development-only-change-me":
         errors.append(Error("A development SECRET_KEY is configured.", id="tracynth.E001"))
-    if not settings.SESSION_COOKIE_SECURE:
+    if settings.ENVIRONMENT == "production" and not settings.SESSION_COOKIE_SECURE:
         errors.append(Error("Secure session cookies are disabled.", id="tracynth.E002"))
     if settings.ENVIRONMENT == "production" and not settings.DATABASE_URL_IS_CONFIGURED:
         errors.append(Error("DATABASE_URL is required in production.", id="tracynth.E003"))

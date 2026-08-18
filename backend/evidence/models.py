@@ -10,9 +10,15 @@ from targets.models import Target
 
 class Evidence(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    scan = models.ForeignKey(Scan, null=True, blank=True, related_name="evidence", on_delete=models.SET_NULL)
-    target = models.ForeignKey(Target, null=True, blank=True, related_name="evidence", on_delete=models.SET_NULL)
-    entity = models.ForeignKey(Entity, null=True, blank=True, related_name="evidence", on_delete=models.SET_NULL)
+    scan = models.ForeignKey(
+        Scan, null=True, blank=True, related_name="evidence", on_delete=models.SET_NULL
+    )
+    target = models.ForeignKey(
+        Target, null=True, blank=True, related_name="evidence", on_delete=models.SET_NULL
+    )
+    entity = models.ForeignKey(
+        Entity, null=True, blank=True, related_name="evidence", on_delete=models.SET_NULL
+    )
     collector_name = models.CharField(max_length=100, db_index=True)
     collector_version = models.CharField(max_length=50)
     source = models.CharField(max_length=2000)
@@ -28,7 +34,9 @@ class Evidence(models.Model):
 
     class Meta:
         ordering = ("-retrieved_at",)
-        indexes = [models.Index(fields=("collector_name", "retrieved_at"), name="evidence_collector_idx")]
+        indexes = [
+            models.Index(fields=("collector_name", "retrieved_at"), name="evidence_collector_idx")
+        ]
 
 
 class RelationshipEvidence(models.Model):
@@ -38,5 +46,7 @@ class RelationshipEvidence(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=("relationship", "evidence"), name="relationship_evidence_unique")
+            models.UniqueConstraint(
+                fields=("relationship", "evidence"), name="relationship_evidence_unique"
+            )
         ]

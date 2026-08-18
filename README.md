@@ -56,6 +56,20 @@ The default Compose bind is loopback port 8080. Production uses Tailscale Serve
 to terminate Tailnet HTTPS and forward to that listener. Never bind the service
 to all interfaces on a publicly reachable host.
 
+For a loopback-only HTTP browser smoke test, use these local `.env` overrides:
+
+```dotenv
+TRACYNTH_ENV=development
+TRACYNTH_PUBLIC_ORIGIN=http://127.0.0.1:8080
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+DJANGO_CSRF_TRUSTED_ORIGINS=http://127.0.0.1:8080
+DJANGO_SECURE_COOKIES=false
+```
+
+Restore `TRACYNTH_ENV=production`, the final Tailnet HTTPS origin, and secure
+cookies before deployment. Insecure cookies are rejected by the production
+configuration check.
+
 ## Quality commands
 
 ```bash
