@@ -11,7 +11,7 @@ RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 RUN npm run build
 
-FROM caddy:2.10-alpine AS runtime
+FROM caddy:2.11-alpine AS runtime
 
 RUN addgroup -S -g 10001 tracynth \
     && adduser -S -D -H -u 10001 -G tracynth tracynth \
